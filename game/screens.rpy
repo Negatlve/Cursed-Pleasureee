@@ -114,6 +114,20 @@ screen simple_elegant_epilogue():
                 pause 1.4
                 linear 1.0 alpha 0.8
     
+    # === НОВАЯ КНОПКА v0.2 ===
+    textbutton "Продолжить":
+        align (0.5, 0.62)
+        text_size 36
+        text_color "#ff3366"
+        text_hover_color "#ffffff"
+        text_selected_color "#ff6699"
+        background None
+        action [SetVariable("persistent.prologue_completed", True), Jump("v02_start")]
+        at transform:
+            alpha 0.0
+            pause 2.0
+            linear 0.6 alpha 1.0
+    
     textbutton _("RETURN TO MENU"):
         align (0.5, 0.7)
         text_size 24
@@ -342,30 +356,121 @@ style input:
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#choice
 
+## ====================== ЭКРАН ВЫБОРА (3 типа: normal / danger / sexy) ======================
 screen choice(items):
     style_prefix "choice"
 
     vbox:
         for i in items:
-            textbutton i.caption action i.action
+            if "{bad}" in i.caption or "{danger}" in i.caption or "GAME OVER" in i.caption.upper() or "КОНЕЦ" in i.caption or "СМЕРТЬ" in i.caption:
+                textbutton i.caption.replace("{bad}", "").replace("{danger}", "") action i.action style "choice_button_danger" at danger_pulse
+                
+            elif "{sexy}" in i.caption:
+                textbutton i.caption.replace("{sexy}", "") action i.action style "choice_button_sexy" at sexy_pulse
+                
+            else:
+                textbutton i.caption action i.action at button_hover
 
 
-style choice_vbox is vbox
-style choice_button is button
-style choice_button_text is button_text
-
+## ====================== ОБЫЧНЫЙ ВЫБОР (сине-бирюзовый) ======================
 style choice_vbox:
     xalign 0.5
     ypos 405
     yanchor 0.5
-
     spacing gui.choice_spacing
 
-style choice_button is default:
-    properties gui.button_properties("choice_button")
+style choice_button:
+    xsize None
+    xpadding 55
+    ypadding 22
+    xminimum 420
+    
+    background "#0a0a14dd"
+    hover_background "#16162bcc"
+    drop_shadow (0, 4, 12, "#000000cc")
 
-style choice_button_text is default:
-    properties gui.text_properties("choice_button")
+style choice_button_text:
+    font gui.choice_button_text_font
+    size gui.choice_button_text_size
+    color gui.choice_button_text_idle_color
+    hover_color gui.choice_button_text_hover_color
+    xalign 0.5
+    text_align 0.5
+    bold True
+    outlines [(4, "#000000", 0, 0), (1, "#00ccff", 0, 0)]
+    hover_outlines [(4, "#000000", 0, 0), (2, "#00ffff", 0, 0), (1, "#33C5F0", 0, 0)]
+
+
+## ====================== ОПАСНЫЙ ВЫБОР (красный) ======================
+style choice_button_danger:
+    xsize None
+    xpadding 55
+    ypadding 26
+    xminimum 420
+    
+    background "#2a0a0add"
+    hover_background "#440f0fcc"
+    drop_shadow (0, 6, 20, "#ff0000aa")
+
+style choice_button_danger_text:
+    font gui.choice_button_text_font
+    size gui.choice_button_text_size + 2
+    color "#ff5555"
+    hover_color "#ff7777"
+    xalign 0.5
+    text_align 0.5
+    bold True
+    outlines [(5, "#000000", 0, 0), (2, "#ff2222", 0, 0)]
+    hover_outlines [(5, "#000000", 0, 0), (3, "#ff0000", 0, 0), (2, "#ff8888", 0, 0)]
+
+
+## ====================== SEXY ВЫБОР (розово-сексуальный) ======================
+style choice_button_sexy:
+    xsize None
+    xpadding 55
+    ypadding 26
+    xminimum 420
+    
+    background "#2a0a1add"
+    hover_background "#3f0f2acc"
+    drop_shadow (0, 5, 18, "#ff69b4aa")
+
+style choice_button_sexy_text:
+    font gui.choice_button_text_font
+    size gui.choice_button_text_size + 1
+    color "#ff69b4"
+    hover_color "#ff99cc"
+    xalign 0.5
+    text_align 0.5
+    bold True
+    outlines [(4, "#000000", 0, 0), (2, "#ff1493", 0, 0)]
+    hover_outlines [(4, "#000000", 0, 0), (3, "#ff69b4", 0, 0), (2, "#ffb6ff", 0, 0)]
+
+
+## ====================== АНИМАЦИИ ======================
+transform button_hover:
+    on hover:
+        ease 0.2 yoffset -4
+    on idle:
+        ease 0.2 yoffset 0
+
+transform danger_pulse:
+    zoom 1.0
+    on hover:
+        linear 0.7 zoom 1.04
+        linear 0.7 zoom 1.0
+        repeat
+    on idle:
+        linear 0.4 zoom 1.0
+
+transform sexy_pulse:
+    zoom 1.0
+    on hover:
+        linear 0.6 zoom 1.035
+        linear 0.6 zoom 1.0
+        repeat
+    on idle:
+        linear 0.5 zoom 1.0
 
 
 ## Quick Menu screen ###########################################################
@@ -2066,4 +2171,73 @@ screen name_confirmed():
             xalign 0.5 at fade_in_image(1.5)
 
     timer 3.2 action Return()        
+
+# Кастомный стиль для menu
+style my_menu_vbox is vbox:
+    xalign 0.5
+    ypos 260
+    spacing 35
+
+style my_menu_button is button:
+    xsize 820
+    ysize 88
+    background None
+    hover_background Solid("#ffffff", alpha=0.12)
+
+style my_menu_button_text is button_text:
+    size 31
+    color "#ffffff"
+    hover_color "#ff6699"
+    outlines [(3, "#000000", 0, 0)]
+    xalign 0.5
+    yalign 0.5        
+# ====================== ВЫБОР ЧАСТИ ТЕЛА ======================
+screen linda_body_selection():
+    modal True
+    zorder 200
+    
+    if linda_body_hover == "boobs":
+        add "329.png" at truecenter
+    elif linda_body_hover == "foot":
+        add "328.png" at truecenter
+    elif linda_body_hover == "hand":
+        add "327.png" at truecenter
+    else:
+        add "326.png" at truecenter
+    
+    imagebutton:
+        idle Solid("#00000000", xsize=569, ysize=408)
+        hover Solid("#00000000", xsize=569, ysize=408)
+        xpos 389 ypos 672
+        action [Hide("linda_body_selection"), Hide("tooltip"), Jump("linda_footjob")]
+        hovered [SetVariable("linda_body_hover", "foot"), Show("tooltip", text="Ноги (Footjob)"), renpy.restart_interaction]
+        unhovered [SetVariable("linda_body_hover", "none"), Hide("tooltip"), renpy.restart_interaction]
+    
+    imagebutton:
+        idle Solid("#00000000", xsize=301, ysize=248)
+        hover Solid("#00000000", xsize=301, ysize=248)
+        xpos 693 ypos 424
+        action [Hide("linda_body_selection"), Hide("tooltip"), Jump("linda_boobjob")]
+        hovered [SetVariable("linda_body_hover", "boobs"), Show("tooltip", text="Сиськи (Boobjob)"), renpy.restart_interaction]
+        unhovered [SetVariable("linda_body_hover", "none"), Hide("tooltip"), renpy.restart_interaction]
+    
+    imagebutton:
+        idle Solid("#00000000", xsize=640, ysize=599)
+        hover Solid("#00000000", xsize=640, ysize=599)
+        xpos 958 ypos 424
+        action [Hide("linda_body_selection"), Hide("tooltip"), Jump("linda_handjob")]
+        hovered [SetVariable("linda_body_hover", "hand"), Show("tooltip", text="Рука (Handjob)"), renpy.restart_interaction]
+        unhovered [SetVariable("linda_body_hover", "none"), Hide("tooltip"), renpy.restart_interaction]
+
+screen tooltip(text=""):
+    zorder 300
+    frame:
+        background None
+        xalign 0.5 yalign 0.92
+        padding (20, 8)
         
+        text text:
+            size 28
+            color "#88FFFF"
+            outlines [(4, "#003333", 0, 0), (2, "#aaffff", 0, 0)]
+            text_align 0.5
